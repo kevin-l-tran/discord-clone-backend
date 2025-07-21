@@ -11,10 +11,11 @@ class BaseConfig:
     JWT_SECRET_KEY           = os.getenv("JWT_SECRET_KEY", "temporary key")
     JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(hours=1)
 
-    G_CALLBACK_URL           = os.environ.get("G_CALLBACK_URL")
-    G_API_CLIENT_ID          = os.environ.get("G_API_CLIENT_ID")
-    G_API_CLIENT_SECRET      = os.environ.get("G_API_CLIENT_SECRET")
+    G_SECRETS_FILE           = os.getenv("G_SECRETS_FILE")
+    G_REDIRECT_URI           = os.getenv("G_REDIRECT_URI", "http://localhost:5000/calendar/callback")
     G_SCOPES                 = ["https://www.googleapis.com/auth/calendar"]
+
+    NINJA_API_KEY            = os.getenv("NINJA_API_KEY")
 
 class DevelopmentConfig(BaseConfig):
     DEBUG = True
