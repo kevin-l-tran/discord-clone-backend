@@ -22,7 +22,11 @@ def create_app(config_object="config.DevelopmentConfig"):
             port=current_app.config['MONGO_PORT'],
         )
 
-        flask_bcrypt.init_app(app)
-        jwt.init_app(app)
+    from .auth import auth
+
+    app.register_blueprint(auth, urlprefix='/')
+
+    flask_bcrypt.init_app(app)
+    jwt.init_app(app)
 
     return app
