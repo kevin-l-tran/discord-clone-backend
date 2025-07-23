@@ -1,5 +1,6 @@
 from flask import Flask, current_app
-from mongoengine import connect
+from mongoengine import connect, disconnect, get_connection
+from pymongo.errors import ServerSelectionTimeoutError, ConfigurationError
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 from dotenv import load_dotenv
@@ -16,11 +17,20 @@ def create_app(config_object="config.DevelopmentConfig"):
     app.config.from_object(config_object)
 
     with app.app_context():
-        connect(
-            db=current_app.config['MONGO_DB'],
-            host=current_app.config['MONGO_HOST'],
-            port=current_app.config['MONGO_PORT'],
-        )
+        try:
+            connect(
+                db=current_app.config['MONGO_DB'],
+                host=current_app.config['MONGO_HOST'],
+                port=current_app.config['MONGO_PORT'],
+                serverSelectionTimeoutMS=5000,
+            )
+            client = get_connection()
+            client.admin.command('ping')
+            app.logger.info("✅ MongoDB connection established")
+        except (ServerSelectionTimeoutError, ConfigurationError) as exc:
+            app.logger.critical("❌ MongoDB connection failed: %s", exc)
+            disconnect()
+            raise
 
     from .auth import auth
 
