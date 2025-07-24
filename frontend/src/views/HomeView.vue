@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AuthModal from '@/components/AuthModal.vue'
 </script>
 
 <template>
@@ -23,5 +24,9 @@
       <button class="px-4 py-2 border border-white/70 hover:bg-white/10 transition flex-1 bg-blue-400 cursor-pointer">Get Started</button>
       <button class="px-4 py-2 border border-white/70 hover:bg-white/10 transition flex-1 cursor-pointer">About</button>
     </nav>
+
+    <Teleport to="body">
+      <AuthModal></AuthModal>
+    </Teleport>
   </div>
 </template>
