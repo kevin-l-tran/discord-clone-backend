@@ -4,6 +4,8 @@ import os
 class BaseConfig:
     SECRET_KEY               = os.environ.get("SECRET_KEY", "temporary key")
 
+    FRONTEND_URL             = os.environ.get("FRONTEND_URL")
+
     MONGO_DB                 = os.getenv("MONGO_DB", "project_db")
     MONGO_HOST               = os.getenv("MONGO_HOST", "localhost"),
     MONGO_PORT               = int(os.getenv("MONGO_PORT", 27017))

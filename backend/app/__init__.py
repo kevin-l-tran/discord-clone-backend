@@ -1,6 +1,7 @@
 import certifi
 
 from flask import Flask, current_app
+from flask_cors import CORS
 from mongoengine import connect, disconnect, get_connection
 from pymongo.errors import ServerSelectionTimeoutError, ConfigurationError
 from flask_bcrypt import Bcrypt
@@ -18,7 +19,11 @@ def create_app(config_object="config.DevelopmentConfig"):
     app = Flask(__name__)
     app.config.from_object(config_object)
 
+    CORS(app)
+
     with app.app_context():
+        # CORS(app, origins=[current_app.config['FRONTEND_URL']]); use when frontend is deployed
+
         try:
             connect(
                 db=current_app.config['MONGO_DB'],
