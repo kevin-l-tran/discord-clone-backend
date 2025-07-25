@@ -39,6 +39,11 @@ def signup():
     email = data["email"]
     password = data["password"]
 
+    if len(username) < 4:
+        return jsonify({"err": "Username too short"}), 422
+    if len(password) < 8:
+        return jsonify({"err": "Password too short"}), 422
+
     if User.objects(username__iexact=username).first():
         return jsonify({"err": "Username taken"}), 409
     if User.objects(email__iexact=email).first():
@@ -61,11 +66,6 @@ def signup():
     response = api_get(url=url, params=params, headers=headers)
     if response.get("has_profanity"):
         return jsonify({"err": "Username has profanity"}), 422
-
-    if len(username) < 4:
-        return jsonify({"err": "Username too short"}), 422
-    if len(password) < 8:
-        return jsonify({"err": "Password too short"}), 422
 
     user = User()
     user.username = username
@@ -91,8 +91,28 @@ def currentuser():
     )
 
 
-@auth.route("/check/email", methods=["GET"])
-def check_email():
+@auth.route("/check/email-taken", methods=["GET"])
+def check_email_taken():
+    email = request.args.get("email")
+
+    if User.objects(email__iexact=email).first():
+        return jsonify({"err": "Email taken"}), 409
+
+    return jsonify({"msg": "Good email"}), 200
+
+
+@auth.route("/check/username-taken", methods=["GET"])
+def check_username_taken():
+    username = request.args.get("username")
+
+    if User.objects(email__iexact=username).first():
+        return jsonify({"err": "Email taken"}), 409
+
+    return jsonify({"msg": "Good username"}), 200
+
+
+@auth.route("/check/valid-email", methods=["GET"])
+def check_valid_email():
     url = "https://api.api-ninjas.com/v1/validateemail"
     params = {"email": request.args.get("email")}
     headers = {"X-Api-Key": current_app.config["NINJA_API_KEY"]}
