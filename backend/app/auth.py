@@ -1,5 +1,10 @@
 from flask import Blueprint, request, jsonify, current_app, url_for
-from flask_jwt_extended import create_access_token, current_user, jwt_required
+from flask_jwt_extended import (
+    create_access_token,
+    current_user,
+    get_jwt_identity,
+    jwt_required,
+)
 from bson import ObjectId
 
 from . import jwt
@@ -137,6 +142,13 @@ def check_profanity():
         return jsonify({"err": "Text has profanity"}), 422
 
     return jsonify({"msg": "No profanity"}), 200
+
+
+@auth.route("/verify-token", methods=["GET"])
+@jwt_required
+def verify_token():
+    current_user = get_jwt_identity()
+    return jsonify({"msg": "Token is valid", "user": current_user}), 200
 
 
 @jwt.user_identity_loader
