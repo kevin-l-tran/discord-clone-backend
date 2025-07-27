@@ -64,38 +64,25 @@ class User(TimestampedDocument):
 
 class Group(TimestampedDocument):
     name = StringField(required=True, unique=True, min_length=4)
-    description = StringField(max_length=150)
-    img = URLField()
+    description = StringField(max_length=150, null=True)
+    img = URLField(required=True)
+
+
+class RoleType(Enum):
+    OWNER = "Owner"
+    ADMIN = "Admin"
+    MEMBER = "Member"
 
 
 class GroupMembership(TimestampedDocument):
     user = LazyReferenceField(User, required=True, reverse_delete_rule=CASCADE)
     group = LazyReferenceField(Group, required=True, reverse_delete_rule=CASCADE)
     nickname = StringField()
-    role = ListField(ReferenceField("Role"))
+    role = EnumField(RoleType, default=RoleType.MEMBER)
     is_muted = BooleanField(default=False)
     is_banned = BooleanField(default=False)
 
     meta = {"indexes": [{"fields": ["user", "group"], "unique": True}]}
-
-
-# END ###########################################################################
-
-# ROLE ##########################################################################
-
-
-class PermissionSet(EmbeddedDocument):
-    read = BooleanField(default=False)
-    write = BooleanField(default=False)
-    manage = BooleanField(default=False)
-
-
-class Role(Document):
-    name = StringField(required=True)
-    group = ReferenceField(Group, required=True, reverse_delete_rule=CASCADE)
-    permissions = EmbeddedDocumentField(PermissionSet, default=PermissionSet)
-
-    meta = {"indexes": [{"fields": ["group", "name"], "unique": True}]}
 
 
 # END ###########################################################################
@@ -116,13 +103,6 @@ class Channel(Document):
     position = IntField(default=0)
 
     meta = {"indexes": [{"fields": ["group", "name"], "unique": True}]}
-
-
-class ChannelPermissionOverride(Document):
-    channel = ReferenceField(Channel, required=True, reverse_delete_rule=CASCADE)
-    target = GenericReferenceField(required=True)  # can point at a User or Role
-    allow_permissions = EmbeddedDocumentField(PermissionSet, default=PermissionSet)
-    deny_permissions = EmbeddedDocumentField(PermissionSet, default=PermissionSet)
 
 
 # END ###########################################################################
