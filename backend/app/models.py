@@ -14,10 +14,7 @@ from mongoengine import (
     IntField,
     LazyReferenceField,
     QuerySet,
-    EmbeddedDocument,
-    EmbeddedDocumentField,
     EnumField,
-    GenericReferenceField,
 )
 
 from . import flask_bcrypt
@@ -63,7 +60,7 @@ class User(TimestampedDocument):
 
 
 class Group(TimestampedDocument):
-    name = StringField(required=True, unique=True, min_length=4)
+    name = StringField(required=True, min_length=4)
     description = StringField(max_length=150, null=True)
     img = URLField(required=True)
 

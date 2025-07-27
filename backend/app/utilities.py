@@ -1,10 +1,13 @@
 import requests
 
 from flask import Response, current_app, jsonify, request
-from typing import Any, Callable, Dict, Optional, TypeVar, Union
+from typing import Any, Callable, Dict, Optional, Tuple, TypeVar, Union
 from werkzeug.datastructures import FileStorage
+from google.oauth2 import service_account
 from google.cloud import storage
+from datetime import timedelta
 from functools import wraps
+from PIL import Image
 
 
 class ApiError(Exception):
@@ -53,7 +56,8 @@ def api_get(
 
 
 # Type variable for decorator
-F = TypeVar('F', bound=Callable[..., Any])
+F = TypeVar("F", bound=Callable[..., Any])
+
 
 def require_json_fields(*fields: str) -> Callable[[F], F]:
     """
@@ -67,6 +71,7 @@ def require_json_fields(*fields: str) -> Callable[[F], F]:
         specified fields are present and contain non-whitespace characters. If validation fails,
         returns a JSON error response with a 400 status.
     """
+
     def decorator(fn: F) -> F:
         @wraps(fn)
         def wrapper(*args: Any, **kwargs: Any) -> Union[Response, Any]:
@@ -77,16 +82,13 @@ def require_json_fields(*fields: str) -> Callable[[F], F]:
                     return jsonify({"err": f"Missing {field}"}), 400
             request.json_data = data
             return fn(*args, **kwargs)
-        
+
         return wrapper
+
     return decorator
 
 
-def upload_to_gcs(
-    file: FileStorage,
-    bucket_name: str,
-    blob_name: str
-) -> str:
+def upload_to_gcs(file: FileStorage, bucket_name: str, blob_name: str) -> str:
     """
     Uploads a file to Google Cloud Storage and makes it publicly accessible.
 
@@ -108,14 +110,64 @@ def upload_to_gcs(
             If any error occurs during interaction with GCS (authentication,
             permissions, network issues, etc.).
     """
-    storage_client = storage.Client()
+    key_path = current_app.config.get("G_SECRETS_FILE")
+    creds = service_account.Credentials.from_service_account_file(key_path)
+    storage_client = storage.Client(credentials=creds, project=creds.project_id)
     bucket = storage_client.bucket(bucket_name)
     blob = bucket.blob(blob_name)
 
-    blob.upload_from_file(
-        file,
-        content_type=file.content_type
-    )
+    blob.upload_from_file(file, content_type=file.content_type)
 
-    blob.make_public()
-    return blob.public_url
+    url = blob.generate_signed_url(
+        version="v4",
+        expiration=timedelta(minutes=15),
+        method="GET"
+    )
+    return url
+
+
+def validate_image_file(
+    img_file: FileStorage, max_bytes: Optional[int] = None
+) -> Optional[Tuple[dict, int]]:
+    """
+    Validates that an uploaded file is a real image within size limits.
+
+    Checks, in order:
+      1. MIME type starts with "image/".
+      2. File size ≤ `max_bytes`.
+      3. Full structure check via Pillow's `Image.verify()`.
+
+    Args:
+        img_file (FileStorage): The uploaded file from `request.files`.
+        max_bytes (int): Maximum allowed size in bytes (default 5 MB).
+
+    Returns:
+        None if all checks pass, or a tuple `(payload, status_code)` where
+        `payload` is a JSON-serializable dict `{"err": "..."}`
+        and `status_code` is the HTTP code to return.
+    """
+    if not img_file.mimetype.startswith("image/"):
+        return {"err": "File is not an image"}, 400
+
+    DEFAULT_MAX_BYTES = 5 * 1024 * 1024  # 5 MB
+    if max_bytes is None:
+        max_bytes = current_app.config.get("MAX_UPLOAD_BYTES", DEFAULT_MAX_BYTES)
+
+    stream = img_file.stream
+    stream.seek(0, 2)
+    size = stream.tell()
+    stream.seek(0)
+    if size > max_bytes:
+        return {"err": "Image too large"}, 413
+
+    try:
+        img = Image.open(stream)
+        img.verify()
+        fmt = getattr(img, "format", None)
+        if fmt is None:
+            raise ValueError("Unknown format")
+        stream.seek(0)
+    except Exception:
+        return {"err": "Corrupted or unsupported image"}, 400
+
+    return None
