@@ -143,7 +143,7 @@ class MessageQuerySet(QuerySet):
 class Message(TimestampedDocument):
     channel = ReferenceField(Channel, required=True, reverse_delete_rule=CASCADE)
     author = ReferenceField(User, required=True, reverse_delete_rule=CASCADE)
-    content = StringField(required=True)
+    content = StringField()
     attachments = ListField(URLField())
     edited_at = DateTimeField()
     deleted_at = DateTimeField()
