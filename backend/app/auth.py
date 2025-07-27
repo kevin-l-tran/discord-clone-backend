@@ -145,7 +145,7 @@ def check_profanity():
 
 
 @auth.route("/verify-token", methods=["GET"])
-@jwt_required
+@jwt_required()
 def verify_token():
     current_user = get_jwt_identity()
     return jsonify({"msg": "Token is valid", "user": current_user}), 200
