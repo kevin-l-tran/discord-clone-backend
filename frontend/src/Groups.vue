@@ -39,12 +39,12 @@ const tempGroups = [
       </GroupCard>
 
       <div
-        class="w-72 bg-white shadow-lg rounded-xl border-3 border-white flex justify-evenly overflow-hidden transition duration-500 hover:shadow-xl hover:border-sky-300 flex flex-col items-center justify-between">
-        <button class="text-5xl font-semibold text-gray-800 hover:text-sky-600 transition cursor-pointer">
+        class="w-80 bg-white shadow-lg rounded-xl border-3 border-white flex justify-evenly overflow-hidden transition duration-500 hover:shadow-xl hover:border-sky-300 flex flex-col items-center justify-between">
+        <button class="text-5xl font-semibold text-gray-800 hover:text-sky-600 transition cursor-pointer p-10">
           + Add
         </button>
         <div class="w-64 h-1 bg-gray-300" />
-        <button class="text-5xl font-semibold text-gray-800 hover:text-sky-600 transition cursor-pointer">
+        <button class="text-5xl font-semibold text-gray-800 hover:text-sky-600 transition cursor-pointer p-10">
           + Create
         </button>
       </div>
