@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import GroupCard from './components/Group/GroupCard.vue';
 import CreateGroupModal from './components/Group/CreateGroupModal.vue';
+import AddGroupModal from './components/Group/AddGroupModal.vue';
 
 import { onMounted, ref } from 'vue';
 import { BACKEND_URL } from './config';
 
 const showCreate = ref(false);
+const showAdd = ref(false);
+
 const groups = ref<any[]>([]);
 const loading = ref(true);
 const error = ref<string | null>(null);
@@ -52,7 +55,7 @@ onMounted(async () => {
 
       <div
         class="w-80 bg-white shadow-lg rounded-xl border-3 border-white flex justify-evenly overflow-hidden transition duration-500 hover:shadow-xl hover:border-sky-300 flex flex-col items-center justify-between">
-        <button class="text-5xl font-semibold text-gray-800 hover:text-sky-600 transition cursor-pointer p-10">
+        <button class="text-5xl font-semibold text-gray-800 hover:text-sky-600 transition cursor-pointer p-10" @click="showAdd = true">
           + Add
         </button>
         <div class="w-64 h-1 bg-gray-300" />
@@ -65,5 +68,8 @@ onMounted(async () => {
 
   <Teleport to="body">
     <CreateGroupModal v-show="showCreate" @close="showCreate = false"></CreateGroupModal>
+  </Teleport>
+  <Teleport to="body">
+    <AddGroupModal v-show="showAdd" @close="showAdd = false"></AddGroupModal>
   </Teleport>
 </template>
