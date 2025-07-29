@@ -2,24 +2,31 @@
 import GroupCard from './components/Group/GroupCard.vue';
 import CreateGroupModal from './components/Group/CreateGroupModal.vue';
 
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
+import { BACKEND_URL } from './config';
 
 const showCreate = ref(false);
+const groups = ref<any[]>([]);
+const loading = ref(true);
+const error = ref<string | null>(null);
 
-const tempGroups = [
-  {
-    id: 'advising',
-    name: 'NSM College Advising',
-    image: '/src/assets/background.avif',
-    description: 'test description'
-  },
-  {
-    id: 'cpsc449',
-    name: 'Summer 2025 CPSC 449 ijerokgljdrikogdioguduiogjuigjrdiujgiujj',
-    image: '/src/assets/background.avif',
-    description: 'Gg,0N]pa/y$a +F%.zHHHBj hZ3u+.vB [R2jJ& i #BQ6y=7d #qP9ct fA 8V} P} 4M:Swu( wPnw dyZ0J]0;dgT ;8aEpR( DHd=G=w% m%x8aK N/QN+&n .d7NQeB SKcB}j[e}Xq#L&r&ww#kzj)yxj%89rge6Tk'
-  },
-];
+onMounted(async () => {
+  const token = localStorage.getItem('access_token');
+  try {
+    const res = await fetch(BACKEND_URL + '/user-groups', {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    groups.value = await res.json();
+  } catch (e: any) {
+    error.value = e.message;
+  } finally {
+    loading.value = false;
+  }
+});
 </script>
 
 <template>
@@ -40,7 +47,7 @@ const tempGroups = [
     </header>
 
     <div class="flex flex-wrap gap-10 m-8 relative z-10">
-      <GroupCard v-for="group in tempGroups" :key="group.id" :group-image="group.image" :group-name="group.name" :group-description="group.description">
+      <GroupCard v-for="group in groups" :key="group.id" :group-image="group.img_url" :group-name="group.name" :group-description="group.description">
       </GroupCard>
 
       <div
