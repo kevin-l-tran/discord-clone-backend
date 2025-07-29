@@ -52,9 +52,11 @@ def create_app(config_object="config.DevelopmentConfig"):
 
     from .auth import auth
     from .groups import groups
+    from .memberships import memberships
 
     app.register_blueprint(auth, urlprefix='/')
     app.register_blueprint(groups, urlprefix='/')
+    app.register_blueprint(memberships, urlprefix='/')
 
     flask_bcrypt.init_app(app)
     jwt.init_app(app)

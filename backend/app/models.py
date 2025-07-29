@@ -81,6 +81,18 @@ class GroupMembership(TimestampedDocument):
 
     meta = {"indexes": [{"fields": ["user", "group"], "unique": True}]}
 
+    def to_dict(self):
+        return {
+            "id": str(self.id),
+            "user": str(self.user.id),
+            "group": str(self.group.id),
+            "nickname": self.nickname,
+            "role": self.role.value,
+            "is_muted": self.is_muted,
+            "is_banned": self.is_banned,
+            "created_at": self.created_at.isoformat(),
+        }
+
 
 # END ###########################################################################
 
