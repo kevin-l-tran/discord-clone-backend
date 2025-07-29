@@ -41,9 +41,6 @@ def get_groups():
 
 @groups.route("/group/<group_id>", methods=["GET"])
 def get_group(group_id):
-    if not ObjectId.is_valid(group_id):
-        return jsonify({"err": "Invalid group ID"}), 400
-
     try:
         group = Group.objects.get(id=group_id)
     except DoesNotExist:
