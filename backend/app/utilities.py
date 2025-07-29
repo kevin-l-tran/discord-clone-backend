@@ -1,3 +1,4 @@
+from bson import ObjectId
 import requests
 import datetime
 
@@ -283,12 +284,7 @@ def require_group_membership(
             group_id = kwargs[group_arg]
 
             try:
-                group = Group.objects.get(id=group_id)
-            except (DoesNotExist, ValidationError):
-                return jsonify({"err": "Group not found"}), 404
-
-            try:
-                membership = GroupMembership.objects.get(user=user_id, group=group)
+                membership = GroupMembership.objects.get(user=user_id, group=group_id)
             except (DoesNotExist, ValidationError):
                 return jsonify({"err": "Forbidden"}), 403
 
