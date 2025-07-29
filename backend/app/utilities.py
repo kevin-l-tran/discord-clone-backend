@@ -1,4 +1,3 @@
-from bson import ObjectId
 import requests
 import datetime
 
@@ -13,7 +12,7 @@ from datetime import timedelta
 from functools import wraps
 from PIL import Image
 
-from .models import Group, GroupMembership, RoleType
+from .models import GroupMembership, RoleType
 
 
 class ApiError(Exception):
