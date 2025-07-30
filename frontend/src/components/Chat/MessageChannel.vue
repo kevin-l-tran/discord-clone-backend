@@ -40,6 +40,7 @@ const messages = ref<any[]>([]);
 const newText = ref('');
 const nextCursor = ref<string | null>(null);
 const messageContainer = ref<HTMLElement | null>(null);
+const askAI = ref(false)
 
 // Routing & auth
 const route = useRoute();
@@ -104,49 +105,34 @@ async function sendMessage() {
         }
     );
 
-    newText.value = '';
-}
-
-async function askGemini() {
-    if (!newText.value.trim()) return;
-    const form = new FormData();
-    form.append('content', newText.value.trim());
-
-    const res = await fetch(
-        `${BACKEND_URL}/group/${groupId.value}/channels/${channel.id}/messages`,
-        {
-            method: 'POST',
-            headers: { Authorization: `Bearer ${token}` },
-            body: form,
-        }
-    );
-
     const msg = newText.value.trim();
     newText.value = '';
 
-    try {
-        const response = await chat.sendMessageStream({
-            message: msg
-        });
+    if (askAI.value) {
+        try {
+            const response = await chat.sendMessageStream({
+                message: msg
+            });
 
-        let reply = '';
-        for await (const chunk of response) {
-            reply += chunk.text;
-        }
-
-        const form = new FormData();
-        form.append('content', reply);
-
-        await fetch(
-            `${BACKEND_URL}/group/${groupId.value}/channels/${channel.id}/messages/gemini`,
-            {
-                method: 'POST',
-                headers: { Authorization: `Bearer ${token}` },
-                body: form,
+            let reply = '';
+            for await (const chunk of response) {
+                reply += chunk.text;
             }
-        );
-    } catch (error) {
-        console.error('Error with Gemini:', error)
+
+            const form = new FormData();
+            form.append('content', reply);
+
+            await fetch(
+                `${BACKEND_URL}/group/${groupId.value}/channels/${channel.id}/messages/gemini`,
+                {
+                    method: 'POST',
+                    headers: { Authorization: `Bearer ${token}` },
+                    body: form,
+                }
+            );
+        } catch (error) {
+            console.error('Error with Gemini:', error)
+        }
     }
 }
 
@@ -237,7 +223,7 @@ function appendUsername(message) {
     <!-- Chat Messages -->
     <section class="flex-1 overflow-y-auto px-6 py-4 bg-gray-50" ref="messageContainer" @scroll.passive="onScroll">
         <div v-for="msg in messages" :key="msg.id" class="flex items-start mb-6">
-            <img :src="msg.avatar" alt="avatar"
+            <img :src="'https://i.pravatar.cc/50?u=' + msg.author" alt="avatar"
                 class="w-10 h-10 rounded-full mr-4 border border-gray-200 bg-gray-200" />
             <div>
                 <div class="flex items-center mb-1">
@@ -260,6 +246,17 @@ function appendUsername(message) {
                 class="ml-3 px-3 py-1 rounded-lg bg-indigo-600 text-white font-semibold transition hover:bg-indigo-700">
                 Send
             </button>
+            <!-- radio buttons -->
+            <div class="ml-4 flex items-center space-x-4">
+                <label class="flex items-center text-sm">
+                    <input type="radio" class="form-radio" v-model="askAI" :value="false" />
+                    <span class="ml-1">User</span>
+                </label>
+                <label class="flex items-center text-sm">
+                    <input type="radio" class="form-radio" v-model="askAI" :value="true" />
+                    <span class="ml-1">AI</span>
+                </label>
+            </div>
         </form>
     </footer>
 </template>
