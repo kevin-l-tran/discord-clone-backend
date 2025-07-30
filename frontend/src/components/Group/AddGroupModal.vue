@@ -25,7 +25,7 @@ async function submitForm() {
         } else {
             const data = await res.json();
             console.log("Joined successfully!");
-            window.location.href = `/groups/#/${data.id}`;
+            window.location.reload();
         }
     } catch(err) {
         console.error(err);

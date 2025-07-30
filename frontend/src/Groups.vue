@@ -2,12 +2,15 @@
 import GroupCard from './components/Group/GroupCard.vue';
 import CreateGroupModal from './components/Group/CreateGroupModal.vue';
 import AddGroupModal from './components/Group/AddGroupModal.vue';
+import DeleteMembershipModal from './components/Group/DeleteMembershipModal.vue';
 
 import { onMounted, ref } from 'vue';
 import { BACKEND_URL } from './config';
 
 const showCreate = ref(false);
 const showAdd = ref(false);
+const showDeleteMembership = ref(false);
+const deleteId = ref('');
 
 const groups = ref<any[]>([]);
 const loading = ref(true);
@@ -34,6 +37,16 @@ onMounted(async () => {
 function redirect(group_id: string) {
   window.location.href = '/chat/#/' + group_id;
 }
+
+function logout() {
+  localStorage.setItem('access_token', '');
+  window.location.href = '/';
+}
+
+function showDeleteModal(id: string) {
+  showDeleteMembership.value = true;
+  deleteId.value = id;
+}
 </script>
 
 <template>
@@ -50,12 +63,15 @@ function redirect(group_id: string) {
     </div>
 
     <header class="m-8 relative z-10">
-      <h1 class="text-6xl text-blue-950 font-black mb-6 pb-3 border-b-4 border-sky-500">Your Groups</h1>
+      <div class="border-b-4 border-sky-500 mb-6 flex justify-between align-center">
+        <h1 class="text-6xl text-blue-950 font-black mb-2 pb-3">Your Groups</h1>
+        <button class="text-3xl bg-gray-200 rounded py-1 px-3 mb-2 cursor-pointer" @click="logout">Log Out</button>
+      </div>
     </header>
 
     <div class="flex flex-wrap gap-10 m-8 relative z-10">
-      <GroupCard v-for="group in groups" :key="group.id" :group-image="group.img_url" :group-name="group.name"
-        :group-description="group.description" @click="redirect(group.id)">
+      <GroupCard v-for="group in groups" :key="group.id" :group-id="group.id" :group-image="group.img_url" :group-name="group.name"
+        :group-description="group.description" @deleteMembership="showDeleteModal(group.id)">
       </GroupCard>
 
       <div
@@ -78,5 +94,8 @@ function redirect(group_id: string) {
   </Teleport>
   <Teleport to="body">
     <AddGroupModal v-show="showAdd" @close="showAdd = false"></AddGroupModal>
+  </Teleport>
+  <Teleport to="body">
+    <DeleteMembershipModal v-show="showDeleteMembership" @close="showDeleteMembership = false" :id="deleteId"></DeleteMembershipModal>
   </Teleport>
 </template>
