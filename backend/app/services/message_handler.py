@@ -107,7 +107,7 @@ def create_broadcast_message(
         raise
 
     # 3) Build a payload that includes both the DB fields and the temp URLs
-    payload = msg.to_mongo().to_dict()
+    payload = msg.to_dict()
     payload["attachment_urls"] = attachment_urls
 
     # 4) Broadcast the enriched payload

@@ -175,8 +175,8 @@ class Message(TimestampedDocument):
             "author": str(self.author.id),
             "content": self.content,
             "attachments": self.attachments,
-            "edited_at": self.edited_at.date().isoformat() if self.edited_at else None,
-            "deleted_at": self.deleted_at.date().isoformat() if self.deleted_at else None,
+            "edited_at": self.edited_at.isoformat() if self.edited_at else None,
+            "deleted_at": self.deleted_at.isoformat() if self.deleted_at else None,
             "is_deleted": self.is_deleted,
             "reply_to": str(self.reply_to.id) if self.reply_to else None,
         }

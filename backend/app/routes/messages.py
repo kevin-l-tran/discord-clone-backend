@@ -105,14 +105,14 @@ def create_message(group_id, channel_id):
     content = request.form.get("content", "").strip()
     if not content and not files:
         return jsonify({"err": "Missing message content"}), 400
-    
+
     try:
         msg = create_broadcast_message(
-            channel = channel,
-            author = get_jwt_identity(),
-            content = content,
-            reply_to = reply_to,
-            file_streams = files
+            channel=channel,
+            author=get_jwt_identity(),
+            content=content,
+            reply_to=reply_to,
+            file_streams=files,
         )
     except GoogleCloudError:
         current_app.logger.exception("GCS upload failed")
