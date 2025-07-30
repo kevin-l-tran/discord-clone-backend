@@ -8,25 +8,25 @@ import { GoogleGenAI } from "@google/genai";
 // Props
 const props = defineProps<{ channel: { id: string; name: string } }>();
 const channel = props.channel;
-const ai = new GoogleGenAI({apiKey: GEMINI_API_KEY});
+const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 const ai_tools = [
-    {
-        googleSearch: {},
-    },
+  {
+    googleSearch: {},
+  },
 ];
 const ai_config = {
-    thinkingConfig: {
-        thinkingBudget: -1,
-    },
-    ai_tools,
-    responseMimeType: 'text/plain',
+  thinkingConfig: {
+    thinkingBudget: -1,
+  },
+  ai_tools,
+  responseMimeType: 'text/plain',
 };
 const chat = ai.chats.create({
   model: 'gemini-2.5-flash',
   history: [
     {
       role: "model",
-      parts: [{text: "Great to meet you. What would you like to know?"}]
+      parts: [{ text: "Great to meet you. What would you like to know?" }]
     }
   ],
   config: ai_config
@@ -97,7 +97,7 @@ async function askGemini() {
   const form = new FormData();
   form.append('content', newText.value.trim());
 
-  await fetch(
+  const res = await fetch(
     `${BACKEND_URL}/group/${groupId.value}/channels/${channel.id}/messages`,
     {
       method: 'POST',
@@ -105,7 +105,8 @@ async function askGemini() {
       body: form,
     }
   );
-
+  
+  const msg_object = await res.json();
   const msg = newText.value.trim();
   newText.value = '';
 
@@ -118,6 +119,18 @@ async function askGemini() {
     for await (const chunk of response) {
       reply += chunk.text;
     }
+
+    const form = new FormData();
+    form.append('content', reply);
+
+    await fetch(
+      `${BACKEND_URL}/group/${groupId.value}/channels/${channel.id}/messages/gemini`,
+      {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: form,
+      }
+    );
 
     console.log(`Gemini reply: ${reply}`);
   } catch (error) {
