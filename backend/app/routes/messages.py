@@ -5,7 +5,7 @@ from google.cloud.exceptions import GoogleCloudError
 from mongoengine.errors import DoesNotExist, ValidationError
 from dateutil import parser as date_parser
 
-from ..db.models import Channel, ChannelType, Message
+from ..db.models import Channel, ChannelType, Message, User
 from ..services.utilities import require_group_membership, stringify_objectids
 from ..services.message_handler import create_broadcast_message
 
@@ -111,6 +111,41 @@ def create_message(group_id, channel_id):
     except GoogleCloudError:
         current_app.logger.exception("GCS upload failed")
         return jsonify({"err": "Failed to upload attachments"}), 503
+    except Exception:
+        current_app.logger.exception("Unexpected error in create_broadcast_message")
+        return jsonify({"err": "Internal server error"}), 500
+
+    return jsonify(msg.to_json()), 201
+
+
+@messages.route("/group/<group_id>/channels/<channel_id>/messages/gemini", methods=["POST"])
+@jwt_required()
+@require_group_membership(group_arg="group_id")
+def create_gemini_message(group_id, channel_id):
+    try:
+        channel = Channel.objects.get(group=group_id, id=channel_id)
+        if channel.type != ChannelType.TEXT:
+            return jsonify({"err": "Channel is not text channel"}), 400
+    except DoesNotExist:
+        return jsonify({"err": "Channel not found"}), 404
+    except ValidationError:
+        return jsonify({"err": "Invalid channel ID"}), 400
+    
+    try:
+        gemini = User.objects.get(username="gemini")
+    except DoesNotExist:
+        return jsonify({"err": "Gemini not found"}), 404
+    
+    reply_to = request.files.get("reply_to")
+    content = request.form.get("content", "").strip()
+
+    try:
+        msg = create_broadcast_message(
+            channel=channel,
+            author=gemini,
+            content=content,
+            reply_to=reply_to,
+        )
     except Exception:
         current_app.logger.exception("Unexpected error in create_broadcast_message")
         return jsonify({"err": "Internal server error"}), 500
