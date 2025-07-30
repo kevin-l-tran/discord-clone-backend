@@ -49,7 +49,7 @@ def get_channel(group_id, channel_id):
     return jsonify(channel.to_dict()), 200
 
 
-@channels.route("/group/<group_id>/channels", methods=["PATCH"])
+@channels.route("/group/<group_id>/channels", methods=["POST"])
 @jwt_required()
 @require_group_membership(group_arg="group_id", roles=[RoleType.OWNER])
 @require_json_fields("name", "type", "topic")
