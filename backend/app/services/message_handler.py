@@ -2,7 +2,7 @@ from typing import Iterable, Optional
 import uuid
 
 from flask_jwt_extended import jwt_required
-from flask_socketio import join_room
+from flask_socketio import join_room, leave_room
 from google.cloud.exceptions import GoogleCloudError
 from tenacity import RetryError, retry, stop_after_attempt, wait_exponential
 from werkzeug.utils import secure_filename
@@ -14,12 +14,21 @@ from ..db.models import Channel, Message, User
 from .. import socketio
 
 
-@socketio.on('join')
+@socketio.on("join")
 @jwt_required()
 def on_join(data):
-    room = data.get('room')
-    join_room(room)
-    
+    room = data.get("room")
+    if room:
+        join_room(room)
+
+
+@socketio.on("leave")
+@jwt_required()
+def on_leave(data):
+    room = data.get("room")
+    if room:
+        leave_room(room)
+
 
 @retry(
     stop=stop_after_attempt(3),

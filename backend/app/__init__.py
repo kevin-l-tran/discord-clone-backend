@@ -67,6 +67,8 @@ def create_app(config_object="config.DevelopmentConfig"):
     flask_bcrypt.init_app(app)
     jwt.init_app(app)
     socketio.init_app(app)
+    
+    import app.services.message_handler
 
     @app.errorhandler(RequestEntityTooLarge)
     def handle_file_too_large(e):
