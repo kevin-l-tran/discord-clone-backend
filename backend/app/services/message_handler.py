@@ -1,6 +1,8 @@
 from typing import Iterable, Optional
 import uuid
 
+from flask_jwt_extended import jwt_required
+from flask_socketio import join_room
 from google.cloud.exceptions import GoogleCloudError
 from tenacity import RetryError, retry, stop_after_attempt, wait_exponential
 from werkzeug.utils import secure_filename
@@ -12,10 +14,17 @@ from ..db.models import Channel, Message, User
 from .. import socketio
 
 
+@socketio.on('join')
+@jwt_required()
+def on_join(data):
+    room = data.get('room')
+    join_room(room)
+    
+
 @retry(
     stop=stop_after_attempt(3),
     wait=wait_exponential(multiplier=1, min=1, max=10),
-    reraise=True
+    reraise=True,
 )
 def emit_chat(payload, channel):
     socketio.emit("chat:recv", payload, room=channel)
