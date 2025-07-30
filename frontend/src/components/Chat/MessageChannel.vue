@@ -30,7 +30,7 @@ async function loadMessages() {
   }
 
   const res = await fetch(
-    `${BACKEND_URL}/groups/${groupId.value}/channels/${channel.id}/messages?${params.toString()}`,
+    `${BACKEND_URL}/group/${groupId.value}/channels/${channel.id}/messages?${params.toString()}`,
     { headers: { Authorization: `Bearer ${token}` } }
   );
   const data = await res.json();
@@ -56,7 +56,7 @@ async function sendMessage() {
   form.append('content', newText.value.trim());
 
   await fetch(
-    `${BACKEND_URL}/groups/${groupId.value}/channels/${channel.id}/messages`,
+    `${BACKEND_URL}/group/${groupId.value}/channels/${channel.id}/messages`,
     {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
