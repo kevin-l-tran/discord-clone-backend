@@ -13,8 +13,6 @@ from dotenv import load_dotenv
 
 flask_bcrypt = Bcrypt()
 jwt = JWTManager()
-socketio = SocketIO(cors_allowed_origins="*")  # later replace with FRONTEND_URL
-
 load_dotenv()
 
 
@@ -23,7 +21,10 @@ def create_app(config_object="config.DevelopmentConfig"):
     app.config.from_object(config_object)
 
     with app.app_context():
-        # CORS(app, origins=[current_app.config['FRONTEND_URL']]); use when frontend is deployed
+        socketio = SocketIO(
+            cors_allowed_origins=current_app.config["FRONTEND_URL"],
+            async_mode="threading",
+        )
         CORS(
             app,
             resources={
